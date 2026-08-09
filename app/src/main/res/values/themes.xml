@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark-first driving app: the platform theme is dark regardless of system
+         setting so the splash/window background never flashes white at night. -->
+    <style name="Theme.RabbitAV" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/rav_background</item>
+        <item name="android:statusBarColor">@color/rav_background</item>
+        <item name="android:navigationBarColor">@color/rav_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

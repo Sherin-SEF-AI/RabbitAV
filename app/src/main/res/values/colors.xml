@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="rav_background">#FF0B0F14</color>
+    <color name="rav_ic_bg">#FF101820</color>
+    <color name="rav_ic_fg">#FFFF9800</color>
+</resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stylized rabbit ears over a road chevron. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:scaleX="0.6" android:scaleY="0.6" android:pivotX="54" android:pivotY="54">
+        <!-- left ear -->
+        <path
+            android:fillColor="#FFFF9800"
+            android:pathData="M40,18 C34,26 31,38 33,48 C34,54 38,56 42,54 C46,52 48,46 47,38 C46,30 44,22 40,18 Z" />
+        <!-- right ear -->
+        <path
+            android:fillColor="#FFFF9800"
+            android:pathData="M68,18 C74,26 77,38 75,48 C74,54 70,56 66,54 C62,52 60,46 61,38 C62,30 64,22 68,18 Z" />
+        <!-- head -->
+        <path
+            android:fillColor="#FFFF9800"
+            android:pathData="M54,50 C64,50 70,58 70,66 C70,74 63,80 54,80 C45,80 38,74 38,66 C38,58 44,50 54,50 Z" />
+        <!-- road chevron below -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M34,92 L54,82 L74,92 L74,98 L54,88 L34,98 Z" />
+    </group>
+</vector>
