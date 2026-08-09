@@ -33,3 +33,24 @@ Each entry: what was decided, why, and what it affects. Newest entries append at
 - **Release signing uses the debug keystore** so `assembleRelease` produces an installable APK for on-device R8/perf verification. Obviously replace with a real keystore before distribution.
 - **ktlint runs in report mode** (`ignoreFailures = true`): `./gradlew ktlintCheck` produces the report; style violations never block a build. Pragmatic for a generated-heavy Compose codebase.
 - **OkHttp 4.12.0, not 5.x.** MockWebServer's artifact/API changed in 5.x; 4.12 is the most-deployed OkHttp with identical runtime behavior for this app's two endpoints.
+
+## Bundled model (final outcome)
+
+- **Bundled `yolov8n_full_integer_quant.tflite` (INT8 input/output, 3.25 MB, 320×320, [1,84,2100] output).** Export chain that finally worked: uv-provisioned **Python 3.11** + `ultralytics==8.2.103, torch==2.5.1, tensorflow==2.16.2, tf_keras==2.16.0, onnx2tf==1.22.3, onnx==1.16.1, onnxruntime==1.18.1, tflite_support==0.4.4` (coco8 INT8 calibration). Dead ends, recorded so nobody repeats them: Python 3.14 (no TF wheels), latest-everything on 3.12 (torch/ONNX exporter incompat, then ml_dtypes/JAX conflict, then missing tf_keras), tflite_support has no cp312 wheels, and **YOLO11n fails through onnx2tf 1.22–1.26 on its C2PSA attention op** — hence YOLOv8n. Verified on `bus.jpg`: bus 0.86 + 3 persons, matching the float model (`scripts/verify_model.py`).
+- **Full-integer IO preferred over ultralytics' default float-IO "int8" artifact**: no edge dequant layers, the input LUT writes int8 directly, and the INT8-threshold decoder pre-filter skips dequantizing sub-threshold candidates. `export_model.py`'s artifact picker prefers it explicitly.
+
+## Behavior / spec interpretations (continued)
+
+- **Incident clips (Section 5.11 optional feature) cut from v1.** A settings toggle without a real recorder behind it would violate the no-fake-paths rule, and a MediaCodec encoder ring (per-OEM encoder quirks, keyframe/muxer alignment) added un-testable-here risk to the 45-minute stability budget. The spec's own acceptance gates never reference it. v1.1 design sketch: 640×480 AVC ring of GOP-aligned chunks fed from the packed I420 at ~10 fps, MediaMuxer flush on FCW-CRITICAL, 2 GB pruning.
+- **App-language switching**: per-app locale via `LocaleManager` on API 33+; on API 26–32 the app follows the system locale (complete `values-hi` resources exist either way). Avoids dragging appcompat into a pure Compose app just for `setApplicationLocales`. TTS language switches everywhere.
+- **Service crash-recovery restarts in POCKET mode** (START_STICKY with null intent): after a process death we cannot know whether the phone is still windshield-mounted, and POCKET (IMU+GPS only) is the safest thing that is always useful; the notification opens the app where FULL_ADAS is one tap away.
+- **Jolt engine hardening beyond the spec text** (all unit-test-driven, constants documented in code): (1) rough-patch RMS gate is a Schmitt trigger (exit at 0.75× the entry bar) because 0.5 s RMS windows vary ±15% on real washboard and would fragment one patch into sub-2 s spans; (2) the MAD baseline for the rough bar freezes at elevation onset — a sustained patch otherwise raises its own threshold and can never satisfy the 2 s condition; (3) SPEED_BREAKER additionally requires exactly 2–3 contiguous above-60%-of-peak regions (front/rear axle) — peak-dominance ratios turned out NOT to separate breakers from washboard (measured 2.49 vs 2.59), structure does; (4) POTHOLE requires peak > 2.5× window RMS so broadband vibration cannot mint potholes.
+- **Governor compute-pressure input** (p90 > 140 ms or drop ratio > 0.85) only promotes when thermal is also ≥ 0.7 — a cold phone with a heavy model should keep grinding at full quality; the FPS floor is the tracker's job.
+- **Release build signs with the debug keystore** so `assembleRelease` installs for on-device R8/perf verification; swap before any real distribution.
+
+## Known limitations (honest list)
+
+- The bundled COCO model has no AUTO_RICKSHAW / POTHOLE / SPEED_BREAKER classes; those light up via the model contract when a trained IDD model is imported. Rickshaws typically detect as `car`/`truck` meanwhile.
+- IPM distance assumes a locally flat road; crests/dips bias Z (the width-prior cross-check bounds the error and flags low confidence).
+- Wrong-side detection (stretch, default off) keys on closing speed alone; it cannot distinguish a stationary obstacle you approach fast from a genuine oncoming vehicle at similar closing speed.
+- The 45-minute thermal soak and ≥8 FPS floor-device numbers must be validated on the physical phone (commands in README); they cannot be measured in this build environment.
