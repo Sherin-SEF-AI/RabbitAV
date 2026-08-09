@@ -83,10 +83,10 @@ def export(weights: str, imgsz: int, out_dir: Path) -> tuple[Path, str]:
 
 
 def pick_tflite(result_path: Path, variant: str) -> Path | None:
-    """Ultralytics may return the tflite itself or a saved_model dir; find the
-    best artifact for the requested variant."""
-    if result_path.suffix == ".tflite" and result_path.exists():
-        return result_path
+    """Ultralytics may return the tflite itself or a saved_model dir; search
+    the sibling artifacts and take the best one for the requested variant
+    (full-integer IO beats float-IO int8 on the floor device: no edge
+    dequant layers and the app writes the input LUT directly as int8)."""
     search_dir = result_path if result_path.is_dir() else result_path.parent
     preference = {
         "int8": ["_full_integer_quant.tflite", "_int8.tflite", "_integer_quant.tflite"],
@@ -97,6 +97,8 @@ def pick_tflite(result_path: Path, variant: str) -> Path | None:
         for c in candidates:
             if c.name.endswith(suffix):
                 return c
+    if result_path.suffix == ".tflite" and result_path.exists():
+        return result_path
     return candidates[0] if candidates else None
 
 
