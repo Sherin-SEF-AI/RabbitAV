@@ -90,7 +90,6 @@ fun SettingsScreen(
     val language by viewModel.language.collectAsStateWithLifecycle()
     val sync by viewModel.syncEnabled.collectAsStateWithLifecycle()
     val wrongSide by viewModel.wrongSide.collectAsStateWithLifecycle()
-    val incidentClip by viewModel.incidentClip.collectAsStateWithLifecycle()
     val tuning by viewModel.tuning.collectAsStateWithLifecycle()
 
     Column(
@@ -184,16 +183,6 @@ fun SettingsScreen(
             OutlinedButton(onClick = onOpenOemGuide, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.oem_guide_button))
             }
-        }
-
-        SectionHeader(stringResource(R.string.settings_incident_header))
-        SettingCard {
-            ToggleRow(stringResource(R.string.settings_incident_clip), incidentClip) { viewModel.setIncidentClip(it) }
-            Text(
-                stringResource(R.string.settings_incident_desc),
-                color = RavColors.TextSecondary,
-                fontSize = 13.sp,
-            )
         }
 
         SectionHeader(stringResource(R.string.settings_about_header))

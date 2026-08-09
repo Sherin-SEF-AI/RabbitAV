@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RabbitAV</string>
+
+    <!-- Notification -->
+    <string name="notif_channel_name">ड्राइव सत्र</string>
+    <string name="notif_channel_desc">जब RabbitAV सड़क पर नज़र रख रहा हो तब दिखता है</string>
+    <string name="notif_title_drive">RabbitAV — ADAS सक्रिय</string>
+    <string name="notif_title_pocket">RabbitAV — पॉकेट मैपर</string>
+    <string name="notif_title_replay">RabbitAV — रीप्ले टेस्ट</string>
+    <string name="notif_text_format">%1$d किमी/घं · %2$.1f किमी · %3$d खतरे दर्ज</string>
+    <string name="notif_action_stop">रोकें</string>
+
+    <!-- Onboarding / permissions -->
+    <string name="onboarding_title">RabbitAV सेट करें</string>
+    <string name="onboarding_intro">RabbitAV आगे की सड़क देखता है और हर गड्ढा याद रखता है। काम करने के लिए कुछ अनुमतियाँ चाहिए — सब कुछ आपके फ़ोन पर ही रहता है।</string>
+    <string name="perm_notifications_title">सूचनाएँ</string>
+    <string name="perm_notifications_body">ऐप बैकग्राउंड में होने पर ड्राइव सत्र की स्थिति दिखाता है।</string>
+    <string name="perm_camera_title">कैमरा</string>
+    <string name="perm_camera_body">आगे वाहन, लोग और जानवर पहचानता है। वीडियो फ़ोन पर ही लाइव प्रोसेस होता है — कभी सेव या अपलोड नहीं होता।</string>
+    <string name="perm_location_title">लोकेशन</string>
+    <string name="perm_location_body">आपकी गति मापता है और खतरों को नक्शे पर दर्ज करता है। लोकेशन डिवाइस पर ही रहती है, जब तक आप अनाम सिंक चालू न करें।</string>
+    <string name="perm_grant">अनुमति दें</string>
+    <string name="perm_granted">मिल गई</string>
+    <string name="perm_continue">आगे बढ़ें</string>
+    <string name="perm_skip">अभी छोड़ें</string>
+    <string name="battery_opt_title">बैकग्राउंड ड्राइविंग की अनुमति</string>
+    <string name="battery_opt_body">कुछ फ़ोन बैकग्राउंड ऐप बंद कर देते हैं। RabbitAV को बैटरी ऑप्टिमाइज़ेशन से छूट दें ताकि 80 किमी/घं पर अलर्ट बंद न हों।</string>
+    <string name="battery_opt_button">बैटरी ऑप्टिमाइज़ेशन से छूट दें</string>
+    <string name="battery_opt_done">पहले से छूट है</string>
+    <string name="oem_guide_button">फ़ोन-विशेष ऑटोस्टार्ट सेटिंग</string>
+
+    <!-- Drive HUD -->
+    <string name="drive_start">ड्राइव शुरू करें</string>
+    <string name="drive_start_pocket">पॉकेट मोड (बिना कैमरा)</string>
+    <string name="drive_stop">ड्राइव समाप्त</string>
+    <string name="drive_speed_unit">किमी/घं</string>
+    <string name="drive_no_gps">GPS नहीं</string>
+    <string name="hud_calibration_needed">ADAS के लिए माउंट कैलिब्रेट करें</string>
+    <string name="hud_calibrate_now">कैलिब्रेट</string>
+    <string name="hud_adas_active">ADAS सक्रिय</string>
+    <string name="hud_adas_off_low_speed">ADAS स्टैंडबाय — 10 किमी/घं से कम</string>
+    <string name="hud_adas_off_no_gps">ADAS रुका — GPS की प्रतीक्षा</string>
+    <string name="hud_adas_off_governor">ADAS निलंबित — फ़ोन गर्म है। खतरा मैपिंग जारी है।</string>
+    <string name="hud_adas_off_benchmarking">एक्सेलरेटर बेंचमार्क हो रहा है…</string>
+    <string name="hud_adas_off_pocket">पॉकेट मोड — केवल IMU मैपिंग</string>
+    <string name="hud_headway_label">दूरी-समय</string>
+    <string name="hud_hazards_label">खतरे</string>
+    <string name="hud_report_pothole">गड्ढा</string>
+    <string name="hud_report_breaker">ब्रेकर</string>
+    <string name="hud_report_water">पानी</string>
+    <string name="hud_report_ack">दर्ज हुआ</string>
+    <string name="hud_dim_hint">डिम करने के लिए टैप करें · अलर्ट चालू रहेंगे</string>
+    <string name="hud_dim_active">केवल-ऑडियो मोड — जगाने के लिए टैप करें</string>
+    <string name="hud_replay_speed">कृत्रिम गति</string>
+
+    <!-- Alerts (HUD banner text) -->
+    <string name="alert_fcw_critical">ब्रेक — टक्कर का खतरा</string>
+    <string name="alert_fcw_caution">आगे तेज़ी से पास आ रहे हैं</string>
+    <string name="alert_headway_warning">बहुत पास — दूरी बनाएँ</string>
+    <string name="alert_headway_advisory">कम दूरी</string>
+    <string name="alert_vru">आगे व्यक्ति</string>
+    <string name="alert_animal">आगे जानवर</string>
+    <string name="alert_wrong_side">सामने से वाहन</string>
+    <string name="alert_breaker_ahead">आगे स्पीड ब्रेकर</string>
+    <string name="alert_pothole_ahead">आगे गड्ढा</string>
+    <string name="alert_water_ahead">आगे जलभराव</string>
+    <string name="alert_rough_ahead">आगे खराब सड़क</string>
+    <string name="alert_breaker_visual">स्पीड ब्रेकर दिखा</string>
+    <string name="alert_pothole_visual">गड्ढा दिखा</string>
+
+    <!-- TTS callouts -->
+    <string name="tts_breaker_ahead">आगे स्पीड ब्रेकर है</string>
+    <string name="tts_pothole_ahead">आगे गड्ढा है</string>
+    <string name="tts_water_ahead">आगे जलभराव है</string>
+    <string name="tts_rough_ahead">आगे खराब सड़क है</string>
+
+    <!-- Calibration wizard -->
+    <string name="calib_title">माउंट कैलिब्रेशन</string>
+    <string name="calib_step1_title">1 · माउंट और वाहन</string>
+    <string name="calib_step1_body">फ़ोन को विंडशील्ड पर लगाएँ, कैमरा सड़क की ओर, स्क्रीन आपकी ओर। वाहन चुनें ताकि कैमरे की ऊँचाई पता रहे।</string>
+    <string name="calib_vehicle_hatchback">हैचबैक · 1.25 मी</string>
+    <string name="calib_vehicle_sedan">सेडान · 1.30 मी</string>
+    <string name="calib_vehicle_suv">SUV · 1.55 मी</string>
+    <string name="calib_vehicle_custom">कस्टम ऊँचाई</string>
+    <string name="calib_custom_height_label">सड़क से कैमरे की ऊँचाई (मी)</string>
+    <string name="calib_step2_title">2 · स्थिर रखें</string>
+    <string name="calib_step2_body">समतल जगह पर खड़े रहें। मापते समय वाहन बिल्कुल स्थिर रखें।</string>
+    <string name="calib_step2_capture">झुकाव मापें (3 से)</string>
+    <string name="calib_step2_capturing">माप रहा है… स्थिर रखें</string>
+    <string name="calib_step2_done">झुकाव दर्ज: %1$.1f°</string>
+    <string name="calib_step3_title">3 · क्षितिज</string>
+    <string name="calib_step3_body">रेखा को असली क्षितिज पर खींचें (जहाँ सड़क खत्म दिखती है)। बोनट और डैशबोर्ड की परछाई न देखें।</string>
+    <string name="calib_step4_title">4 · जाँचें</string>
+    <string name="calib_step4_body">रेखाएँ सड़क पर लगभग 10, 25 और 50 मीटर पर दिखनी चाहिए। गलत लगे तो पीछे जाकर क्षितिज ठीक करें।</string>
+    <string name="calib_profile_name_label">प्रोफ़ाइल नाम</string>
+    <string name="calib_save">सहेजें और सक्रिय करें</string>
+    <string name="calib_saved">कैलिब्रेशन सहेजा गया</string>
+    <string name="calib_next">आगे</string>
+    <string name="calib_back">पीछे</string>
+    <string name="calib_no_camera">कैमरा उपलब्ध नहीं — पहले कैमरा अनुमति दें।</string>
+    <string name="calib_rung_label_10">10 मी</string>
+    <string name="calib_rung_label_25">25 मी</string>
+    <string name="calib_rung_label_50">50 मी</string>
+
+    <!-- Map -->
+    <string name="map_title">खतरा नक्शा</string>
+    <string name="map_heatmap">हीटमैप</string>
+    <string name="map_empty">अभी कोई खतरा नहीं — RabbitAV के साथ ड्राइव करें और सड़कें मैप करें।</string>
+    <string name="map_site_hits">%1$d बार</string>
+    <string name="map_site_confidence">विश्वास %1$d%%</string>
+    <string name="map_site_last_seen">आख़िरी बार %1$s</string>
+    <string name="map_site_avg_speed">औसत ट्रिगर गति %1$.0f किमी/घं</string>
+
+    <!-- Trips -->
+    <string name="trips_title">यात्राएँ</string>
+    <string name="trips_empty">अभी कोई यात्रा नहीं।</string>
+    <string name="trip_stats_format">%1$.1f किमी · %2$d मिनट</string>
+    <string name="trip_alerts_format">%1$d अलर्ट · %2$d खतरे</string>
+    <string name="trip_detail_title">यात्रा विवरण</string>
+    <string name="trip_timeline_empty">इस यात्रा में कोई घटना नहीं।</string>
+    <string name="trip_ongoing">चल रही है</string>
+
+    <!-- Settings -->
+    <string name="settings_title">सेटिंग</string>
+    <string name="settings_audio_header">ऑडियो</string>
+    <string name="settings_volume">अलर्ट वॉल्यूम</string>
+    <string name="settings_tts">बोले गए खतरा संदेश</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_hi">हिन्दी</string>
+    <string name="settings_alerts_header">अलर्ट (एडवांस्ड)</string>
+    <string name="settings_wrong_side">रॉन्ग-साइड वाहन अलर्ट (प्रायोगिक)</string>
+    <string name="settings_tuning_reset">अलर्ट ट्यूनिंग रीसेट करें</string>
+    <string name="settings_fcw_caution_ttc">FCW सावधानी TTC (से)</string>
+    <string name="settings_fcw_critical_ttc">FCW गंभीर TTC (से)</string>
+    <string name="settings_headway_advisory">हेडवे सलाह (से)</string>
+    <string name="settings_headway_warning">हेडवे चेतावनी (से)</string>
+    <string name="settings_privacy_header">गोपनीयता और डेटा</string>
+    <string name="settings_sync">अनाम खतरा सिंक</string>
+    <string name="settings_sync_desc">केवल खतरा घटनाएँ अपलोड होती हैं (प्रकार, स्थान, विश्वास)। वीडियो या तस्वीरें कभी नहीं।</string>
+    <string name="settings_reset_device_id">अनाम डिवाइस ID रीसेट करें</string>
+    <string name="settings_device_id_reset">डिवाइस ID रीसेट हुई</string>
+    <string name="settings_privacy_page">RabbitAV क्या सहेजता है</string>
+    <string name="settings_battery_header">विश्वसनीयता</string>
+    <string name="settings_incident_header">घटना क्लिप</string>
+    <string name="settings_incident_clip">गंभीर चेतावनी पर क्लिप रिकॉर्ड करें</string>
+    <string name="settings_incident_desc">10 से का बफर रखता है और FCW-गंभीर पर ±15 से लोकल सेव करता है। 2 GB पर स्वतः साफ़। डिफ़ॉल्ट बंद।</string>
+    <string name="settings_about_header">परिचय</string>
+    <string name="settings_version">संस्करण %1$s</string>
+
+    <!-- Privacy page -->
+    <string name="privacy_title">गोपनीयता</string>
+    <string name="privacy_body">RabbitAV पूरी तरह आपके फ़ोन पर चलता है।\n\nडिवाइस पर सहेजा जाता है:\n• खतरा स्थल (प्रकार, स्थान, विश्वास, समय)\n• यात्राएँ (रूट आँकड़े, अलर्ट संख्या — वीडियो नहीं)\n• माउंट कैलिब्रेशन प्रोफ़ाइल\n• डायग्नोस्टिक्स के लिए अस्थायी लॉग\n\nकभी सहेजा या अपलोड नहीं होता:\n• कैमरा वीडियो या तस्वीरें (फ़्रेम लाइव प्रोसेस होकर मिट जाते हैं)\n• ऑडियो\n\nअनाम सिंक चालू करने पर केवल खतरा घटनाएँ (प्रकार, निर्देशांक, दिशा, गति, विश्वास, समय) और एक बदली जा सकने वाली रैंडम डिवाइस ID अपलोड होती है। तस्वीरें कभी डिवाइस से बाहर नहीं जातीं।</string>
+
+    <!-- OEM guidance -->
+    <string name="oem_title">RabbitAV को चालू रखें</string>
+    <string name="oem_intro">कई Android ब्रांड बैकग्राउंड ऐप बंद कर देते हैं, जिससे हाईवे पर ड्राइव सत्र रुक सकता है। अपने ब्रांड के लिए ये कदम अपनाएँ:</string>
+    <string name="oem_xiaomi">Xiaomi / MIUI · सेटिंग → ऐप्स → ऐप्स प्रबंधित करें → RabbitAV → ऑटोस्टार्ट चालू; बैटरी सेवर → कोई प्रतिबंध नहीं। Recents में ऐप कार्ड को लॉक भी करें।</string>
+    <string name="oem_vivo">Vivo / Funtouch · i Manager → ऐप मैनेजर → ऑटोस्टार्ट मैनेजर → RabbitAV को अनुमति; सेटिंग → बैटरी → हाई बैकग्राउंड पावर → अनुमति दें।</string>
+    <string name="oem_oppo">Oppo / ColorOS · सेटिंग → बैटरी → ऐप बैटरी प्रबंधन → RabbitAV → बैकग्राउंड गतिविधि की अनुमति; स्टार्टअप मैनेजर → ऑटोस्टार्ट की अनुमति।</string>
+    <string name="oem_realme">Realme · सेटिंग → ऐप प्रबंधन → ऐप सूची → RabbitAV → ऑटो-लॉन्च की अनुमति; बैटरी → ऑप्टिमाइज़ न करें।</string>
+    <string name="oem_samsung">Samsung / One UI · सेटिंग → बैटरी → बैकग्राउंड उपयोग सीमा → RabbitAV को Sleeping apps से हटाएँ; Never sleeping apps में जोड़ें।</string>
+    <string name="oem_generic">सभी फ़ोन · नीचे बैटरी-ऑप्टिमाइज़ेशन छूट दें और शुरुआती ड्राइव में ऐप को Recents में पिन रखें।</string>
+
+    <!-- Debug screen -->
+    <string name="debug_title">डायग्नोस्टिक्स</string>
+    <string name="debug_source_header">फ़्रेम स्रोत</string>
+    <string name="debug_source_live">लाइव कैमरा</string>
+    <string name="debug_source_video">वीडियो फ़ाइल</string>
+    <string name="debug_video_none">टेस्ट फ़ोल्डर में वीडियो नहीं। भेजें:\nadb push road.mp4 /sdcard/Android/data/com.deepmost.rabbitav/files/test/</string>
+    <string name="debug_video_loop">वीडियो लूप (सोक)</string>
+    <string name="debug_bench_header">डेलीगेट बेंचमार्क</string>
+    <string name="debug_bench_rerun">बेंचमार्क दोबारा चलाएँ</string>
+    <string name="debug_bench_running">बेंचमार्क चल रहा है…</string>
+    <string name="debug_bench_none">अभी नहीं चला — पहली ड्राइव पर अपने आप चलेगा।</string>
+    <string name="debug_perf_header">लाइव प्रदर्शन</string>
+    <string name="debug_model_header">मॉडल मैनेजर</string>
+    <string name="debug_model_active">सक्रिय: %1$s (%2$s)</string>
+    <string name="debug_model_caps">क्षमताएँ: %1$s</string>
+    <string name="debug_model_import">स्टेज्ड मॉडल इम्पोर्ट करें</string>
+    <string name="debug_model_clear">ओवरराइड हटाएँ (बंडल वाला)</string>
+    <string name="debug_model_staging_hint">स्टेज करें:\nadb push model.tflite model_config.json /sdcard/Android/data/com.deepmost.rabbitav/files/models-staging/</string>
+    <string name="debug_model_imported">मॉडल इम्पोर्ट हुआ: %1$s</string>
+    <string name="debug_model_import_failed">इम्पोर्ट विफल: %1$s</string>
+    <string name="debug_imu_header">IMU</string>
+    <string name="debug_imu_record_start">सेंसर CSV रिकॉर्ड करें</string>
+    <string name="debug_imu_record_stop">रिकॉर्डिंग रोकें</string>
+    <string name="debug_imu_gyro">जायरो: %1$s · दर: %2$.0f Hz</string>
+    <string name="debug_overlay_toggle">HUD पर डिबग ओवरले</string>
+    <string name="debug_export_header">एक्सपोर्ट</string>
+    <string name="debug_export_geojson">GeoJSON एक्सपोर्ट</string>
+    <string name="debug_export_csv">CSV एक्सपोर्ट</string>
+    <string name="debug_export_logs">लॉग एक्सपोर्ट</string>
+    <string name="debug_thermal_hint">थर्मल दबाव सिमुलेट करें:\nadb shell cmd thermalservice override-status 3</string>
+
+    <!-- Misc -->
+    <string name="ok">ठीक</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="nav_drive">ड्राइव</string>
+    <string name="nav_map">नक्शा</string>
+    <string name="nav_trips">यात्राएँ</string>
+    <string name="nav_settings">सेटिंग</string>
+    <string name="nav_debug">डिबग</string>
+</resources>

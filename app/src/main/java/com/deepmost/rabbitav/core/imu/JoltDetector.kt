@@ -44,6 +44,11 @@ class JoltDetector(
     private var roughPeaked = false
     private var roughRefractoryUntilNs = 0L
 
+    /** MAD baseline captured while quiet and FROZEN during an elevated span —
+     *  otherwise a sustained rough patch raises its own detection bar and the
+     *  2 s condition can never be met. */
+    private var roughBaselineMad = 0f
+
     /** Ego speed provider (m/s); gate: no triggers below 8 km/h. */
     var egoSpeedMps: () -> Float = { 0f }
 
@@ -215,6 +220,30 @@ class JoltDetector(
             }
         }
 
+        // Count contiguous regions above 60% of the positive peak — the
+        // breaker-vs-washboard structural discriminator. A breaker's two axle
+        // humps give exactly 2 regions (crest noise cannot split a hump, the
+        // bar sits far below the crest); washboard noise crosses the bar many
+        // times. Regions closer than 80 ms merge (one hump, brief dip).
+        var peakCount = 0
+        if (peakPos > 0.5f) {
+            val bar = 0.6f * peakPos
+            var inRegion = false
+            // sentinel far in the past but safe from Long-subtraction overflow
+            var lastRegionEndT = Long.MIN_VALUE / 4
+            for (i in vs.indices) {
+                if (vs[i] > bar) {
+                    if (!inRegion) {
+                        inRegion = true
+                        if (ts[i] - lastRegionEndT > 80_000_000L) peakCount++
+                    }
+                    lastRegionEndT = ts[i]
+                } else {
+                    inRegion = false
+                }
+            }
+        }
+
         var pitchRange = Float.NaN
         if (hasGyro) {
             var mn = Float.MAX_VALUE
@@ -238,21 +267,30 @@ class JoltDetector(
             doubleBump = doubleBump,
             doubleBumpSymmetric = symmetric,
             doubleBumpGapS = gapS,
+            positivePeakCount = peakCount,
             windowRms = rms,
             gyroPitchRateRange = pitchRange,
         )
     }
 
-    /** Rule-based classifier v1 (Section 5.6). Deterministic; unit-tested. */
+    /** Rule-based classifier v1 (Section 5.6). Deterministic; unit-tested.
+     *  Both discrete classes require the peak to DOMINATE the window RMS —
+     *  broadband washboard vibration must not mint potholes/breakers. */
     fun classify(f: JoltFeatures): Pair<HazardType, Float> {
-        // SPEED_BREAKER: positive-first lift + symmetric double bump (both axles)
-        if (!f.negativeFirst && f.doubleBump && f.doubleBumpSymmetric) {
+        // SPEED_BREAKER: positive-first lift + symmetric double bump (both
+        // axles) with EXACTLY the two-to-three coherent peaks a breaker makes;
+        // washboard vibration shows many comparable peaks and is rejected.
+        if (!f.negativeFirst && f.doubleBump && f.doubleBumpSymmetric &&
+            f.positivePeakCount in 2..3
+        ) {
             var conf = 0.75f
             if (!f.gyroPitchRateRange.isNaN() && f.gyroPitchRateRange > 0.15f) conf += 0.1f
             return HazardType.SPEED_BREAKER to conf.coerceAtMost(0.85f)
         }
-        // POTHOLE: sharp negative-first drop, short event
-        if (f.negativeFirst && f.durationAboveHalfPeakS < POTHOLE_MAX_DURATION_S && f.peakNegative > 2f) {
+        // POTHOLE: sharp negative-first drop, short event, dominant peak
+        if (f.negativeFirst && f.durationAboveHalfPeakS < POTHOLE_MAX_DURATION_S &&
+            f.peakNegative > 2f && f.peakNegative > POTHOLE_DOMINANCE * f.windowRms
+        ) {
             var conf = 0.7f
             if (f.peakPositive > 0.6f * f.peakNegative) conf += 0.1f // hard rebound off the far edge
             return HazardType.POTHOLE to conf.coerceAtMost(0.8f)
@@ -273,8 +311,12 @@ class JoltDetector(
             rmsCount = 0
             rmsWindowStartNs = tNs
 
-            val madNow = mad.mad(tNs)
-            val elevated = shortRms > maxOf(ROUGH_RMS_FLOOR_MPS2, 3f * madNow)
+            if (elevatedSinceNs == 0L) roughBaselineMad = mad.mad(tNs)
+            val enterBar = maxOf(ROUGH_RMS_FLOOR_MPS2, 3f * roughBaselineMad)
+            // Schmitt trigger: once elevated, only a clearly lower RMS ends the
+            // span — 0.5 s RMS windows on real washboard roads vary +-15% and
+            // must not fragment one patch into many sub-2 s spans.
+            val elevated = if (elevatedSinceNs == 0L) shortRms > enterBar else shortRms > enterBar * ROUGH_EXIT_FRACTION
             if (elevated && speed >= MIN_SPEED_MPS && tNs >= roughRefractoryUntilNs) {
                 if (elevatedSinceNs == 0L) {
                     elevatedSinceNs = tNs
@@ -298,8 +340,11 @@ class JoltDetector(
                 elevatedSinceNs = 0L
             }
         }
-        // a dominant single peak during the elevated span reclassifies it as a jolt
-        if (elevatedSinceNs != 0L && absV > threshold * 1.2f) roughPeaked = true
+        // A DOMINANT single peak during the elevated span reclassifies the
+        // stretch as a jolt event: dominant means well above both the adaptive
+        // trigger and the ambient RMS (4x RMS keeps ordinary vibration tails
+        // from vetoing a genuine rough patch).
+        if (elevatedSinceNs != 0L && absV > maxOf(threshold * 1.5f, shortRms * 4f)) roughPeaked = true
     }
 
     fun reset() {
@@ -336,6 +381,14 @@ class JoltDetector(
         /** Rough patch: sustained RMS floor and minimum duration. */
         const val ROUGH_RMS_FLOOR_MPS2 = 1.2f
         const val ROUGH_MIN_DURATION_S = 2.0f
+
+        /** Schmitt-trigger exit: span ends only below this fraction of the
+         *  entry bar. Range 0.6-0.9. */
+        const val ROUGH_EXIT_FRACTION = 0.75f
+
+        /** Pothole peak must exceed this multiple of the window RMS.
+         *  Range 1.5-3.5; higher = fewer false potholes on washboard roads. */
+        const val POTHOLE_DOMINANCE = 2.5f
 
         /** Confidence cap without a gyroscope (Section 5.6). */
         const val NO_GYRO_CONF_CAP = 0.7f

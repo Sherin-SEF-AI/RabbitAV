@@ -62,14 +62,20 @@ def main() -> None:
     az += drop + slam
     write("pothole.csv", t, az)
 
-    # Rough patch: 3 s of 1.1 m/s^2 RMS broadband, band-limited by a moving avg.
+    # Rough patch: ~2.7 s of ~1.35 m/s^2 RMS broadband vibration. Soft-clipped
+    # at 2.15 m/s^2 — physically, suspension travel limits single-sample
+    # extremes — which keeps every sample below the 2.5 m/s^2 jolt trigger
+    # floor: the patch must register through sustained RMS, not as a jolt.
     t, az = base(10.0)
     r = np.random.default_rng(7)
-    noise = r.normal(0, 1.6, len(t))
+    noise = r.normal(0, 5.2, len(t))
     kernel = np.ones(3) / 3
-    noise = np.convolve(noise, kernel, mode="same")
-    mask = (t >= 3.0) & (t <= 6.0)
-    ramp = np.clip(1 - np.abs((t - 4.5) / 1.5), 0, 1) ** 0.5
+    noise = np.convolve(noise, kernel, mode="same")  # sigma -> ~3.0
+    clip = 2.15
+    noise = np.tanh(noise / clip) * clip
+    mask = (t >= 3.0) & (t <= 6.5)
+    # plateau envelope: full amplitude for ~2.3 s, 0.6 s ramps at the edges
+    ramp = np.clip((1 - np.abs((t - 4.75) / 1.75)) * 3, 0, 1)
     az += noise * mask * ramp
     write("rough_patch.csv", t, az)
 

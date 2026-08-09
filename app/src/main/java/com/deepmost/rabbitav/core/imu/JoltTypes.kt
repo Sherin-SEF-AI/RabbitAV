@@ -19,6 +19,9 @@ data class JoltFeatures(
     val doubleBump: Boolean,
     val doubleBumpSymmetric: Boolean,
     val doubleBumpGapS: Float,
+    /** Distinct positive peaks above 60% of the maximum (>=0.12 s apart). A
+     *  breaker shows exactly 2 (front/rear axle); washboard shows many. */
+    val positivePeakCount: Int,
     val windowRms: Float,
     val gyroPitchRateRange: Float, // rad/s peak-to-peak; NaN when no gyroscope
 )
