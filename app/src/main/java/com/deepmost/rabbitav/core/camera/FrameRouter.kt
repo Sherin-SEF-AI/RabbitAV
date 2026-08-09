@@ -31,6 +31,10 @@ class FrameRouter(
     /** Governor gate: when false, frames feed only the lookback ring. */
     @Volatile var detectorEnabled: Boolean = true
 
+    /** Governor FPS cap: minimum interval between inference submissions (0 = uncapped). */
+    @Volatile var minSubmitIntervalNs: Long = 0L
+    private var lastSubmitNs = 0L
+
     /** Ring is created lazily once geometry is known (entry size depends on crop). */
     @Volatile var ring: LookbackRingBuffer? = null
         private set
@@ -103,7 +107,7 @@ class FrameRouter(
             }
 
             val analyzed: Boolean
-            if (executor.isBusy) {
+            if (executor.isBusy || (minSubmitIntervalNs > 0 && ts - lastSubmitNs < minSubmitIntervalNs)) {
                 // Only this thread submits, so isBusy is authoritative here.
                 framesDropped.incrementAndGet()
                 analyzed = false
@@ -111,6 +115,7 @@ class FrameRouter(
                 claimedSlot = preprocessor.claimForInference()
                 claimedTimestampNs = ts
                 analyzed = executor.trySubmit(inferenceTask)
+                if (analyzed) lastSubmitNs = ts
             }
             onFrameStats(ts, analyzed)
         } catch (t: Throwable) {
@@ -119,9 +124,16 @@ class FrameRouter(
         }
     }
 
-    /** Pauses routing, runs [block] (buffer/engine surgery), resumes. */
+    /** Pauses routing, runs [block] (buffer/engine surgery), resumes. The
+     *  brief sleep lets any frame that passed the gate check finish packing
+     *  before buffers are torn down (frames arrive ~33 ms apart; packing takes
+     *  ~2 ms, so 60 ms guarantees quiescence). */
     fun reconfigure(block: () -> Unit) {
         gate.set(false)
+        try {
+            Thread.sleep(60)
+        } catch (_: InterruptedException) {
+        }
         try {
             block()
         } finally {

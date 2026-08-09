@@ -1,4 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">RabbitAV</string>
+
+    <!-- Notification -->
+    <string name="notif_channel_name">Drive session</string>
+    <string name="notif_channel_desc">Shown while RabbitAV is monitoring the road</string>
+    <string name="notif_title_drive">RabbitAV — ADAS active</string>
+    <string name="notif_title_pocket">RabbitAV — pocket mapper</string>
+    <string name="notif_title_replay">RabbitAV — replay test</string>
+    <string name="notif_text_format">%1$d km/h · %2$.1f km · %3$d hazards logged</string>
+    <string name="notif_action_stop">Stop</string>
+
+    <!-- Onboarding / permissions -->
+    <string name="onboarding_title">Set up RabbitAV</string>
+    <string name="onboarding_intro">RabbitAV watches the road ahead and remembers every pothole. It needs a few permissions to do its job — everything stays on your phone.</string>
+    <string name="perm_notifications_title">Notifications</string>
+    <string name="perm_notifications_body">Shows the drive session status while the app is in the background.</string>
+    <string name="perm_camera_title">Camera</string>
+    <string name="perm_camera_body">Detects vehicles, people and animals ahead. Video is processed live on the phone and never stored or uploaded.</string>
+    <string name="perm_location_title">Location</string>
+    <string name="perm_location_body">Measures your speed and pins hazards to the map. Locations stay on the device unless you enable anonymous sync.</string>
+    <string name="perm_grant">Grant</string>
+    <string name="perm_granted">Granted</string>
+    <string name="perm_continue">Continue</string>
+    <string name="perm_skip">Skip for now</string>
+    <string name="battery_opt_title">Allow background driving</string>
+    <string name="battery_opt_body">Some phones kill background apps mid-drive. Exempt RabbitAV from battery optimization so alerts never die at 80 km/h.</string>
+    <string name="battery_opt_button">Exempt from battery optimization</string>
+    <string name="battery_opt_done">Already exempted</string>
+    <string name="oem_guide_button">Phone-specific autostart settings</string>
+
+    <!-- Drive HUD -->
+    <string name="drive_start">START DRIVE</string>
+    <string name="drive_start_pocket">Pocket mode (no camera)</string>
+    <string name="drive_stop">End drive</string>
+    <string name="drive_speed_unit">km/h</string>
+    <string name="drive_no_gps">NO GPS</string>
+    <string name="hud_calibration_needed">Calibrate mount to enable ADAS</string>
+    <string name="hud_calibrate_now">Calibrate</string>
+    <string name="hud_adas_active">ADAS active</string>
+    <string name="hud_adas_off_low_speed">ADAS standby — below 10 km/h</string>
+    <string name="hud_adas_off_no_gps">ADAS paused — waiting for GPS</string>
+    <string name="hud_adas_off_governor">ADAS suspended — phone too hot. Hazard mapping continues.</string>
+    <string name="hud_adas_off_benchmarking">Benchmarking accelerators…</string>
+    <string name="hud_adas_off_pocket">Pocket mode — IMU mapping only</string>
+    <string name="hud_headway_label">Headway</string>
+    <string name="hud_hazards_label">Hazards</string>
+    <string name="hud_report_pothole">Pothole</string>
+    <string name="hud_report_breaker">Breaker</string>
+    <string name="hud_report_water">Water</string>
+    <string name="hud_report_ack">Reported</string>
+    <string name="hud_dim_hint">Tap to dim · alerts stay on</string>
+    <string name="hud_dim_active">Audio-only mode — tap to wake</string>
+    <string name="hud_replay_speed">Synthetic speed</string>
+
+    <!-- Alerts (HUD banner text) -->
+    <string name="alert_fcw_critical">BRAKE — collision risk</string>
+    <string name="alert_fcw_caution">Closing fast ahead</string>
+    <string name="alert_headway_warning">Too close — back off</string>
+    <string name="alert_headway_advisory">Short headway</string>
+    <string name="alert_vru">Person ahead</string>
+    <string name="alert_animal">Animal ahead</string>
+    <string name="alert_wrong_side">ONCOMING VEHICLE</string>
+    <string name="alert_breaker_ahead">Speed breaker ahead</string>
+    <string name="alert_pothole_ahead">Pothole ahead</string>
+    <string name="alert_water_ahead">Waterlogging ahead</string>
+    <string name="alert_rough_ahead">Rough road ahead</string>
+    <string name="alert_breaker_visual">Speed breaker detected</string>
+    <string name="alert_pothole_visual">Pothole detected</string>
+
+    <!-- TTS callouts -->
+    <string name="tts_breaker_ahead">Speed breaker ahead</string>
+    <string name="tts_pothole_ahead">Pothole ahead</string>
+    <string name="tts_water_ahead">Waterlogging ahead</string>
+    <string name="tts_rough_ahead">Rough road ahead</string>
+
+    <!-- Calibration wizard -->
+    <string name="calib_title">Mount calibration</string>
+    <string name="calib_step1_title">1 · Mount &amp; vehicle</string>
+    <string name="calib_step1_body">Fix the phone on the windshield, camera facing the road, screen toward you. Pick your vehicle so RabbitAV knows the camera height.</string>
+    <string name="calib_vehicle_hatchback">Hatchback · 1.25 m</string>
+    <string name="calib_vehicle_sedan">Sedan · 1.30 m</string>
+    <string name="calib_vehicle_suv">SUV · 1.55 m</string>
+    <string name="calib_vehicle_custom">Custom height</string>
+    <string name="calib_custom_height_label">Camera height above road (m)</string>
+    <string name="calib_step2_title">2 · Hold still</string>
+    <string name="calib_step2_body">Park on level ground. Keep the vehicle stationary while the phone measures its mounting angle.</string>
+    <string name="calib_step2_capture">Capture pitch (3 s)</string>
+    <string name="calib_step2_capturing">Measuring… hold still</string>
+    <string name="calib_step2_done">Pitch captured: %1$.1f°</string>
+    <string name="calib_step3_title">3 · Horizon</string>
+    <string name="calib_step3_body">Drag the line onto the true horizon (where the road vanishes). Ignore bonnet and dashboard reflections.</string>
+    <string name="calib_step4_title">4 · Verify</string>
+    <string name="calib_step4_body">The rungs should sit at roughly 10, 25 and 50 metres on the road. If they look wrong, go back and re-adjust the horizon.</string>
+    <string name="calib_profile_name_label">Profile name</string>
+    <string name="calib_save">Save &amp; activate</string>
+    <string name="calib_saved">Calibration saved</string>
+    <string name="calib_next">Next</string>
+    <string name="calib_back">Back</string>
+    <string name="calib_no_camera">Camera unavailable — grant camera permission first.</string>
+    <string name="calib_rung_label_10">10 m</string>
+    <string name="calib_rung_label_25">25 m</string>
+    <string name="calib_rung_label_50">50 m</string>
+
+    <!-- Map -->
+    <string name="map_title">Hazard map</string>
+    <string name="map_heatmap">Heatmap</string>
+    <string name="map_empty">No hazards yet — drive with RabbitAV to map your roads.</string>
+    <string name="map_site_hits">%1$d hits</string>
+    <string name="map_site_confidence">Confidence %1$d%%</string>
+    <string name="map_site_last_seen">Last seen %1$s</string>
+    <string name="map_site_avg_speed">Avg trigger speed %1$.0f km/h</string>
+
+    <!-- Trips -->
+    <string name="trips_title">Trips</string>
+    <string name="trips_empty">No trips yet.</string>
+    <string name="trip_stats_format">%1$.1f km · %2$d min</string>
+    <string name="trip_alerts_format">%1$d alerts · %2$d hazards</string>
+    <string name="trip_detail_title">Trip detail</string>
+    <string name="trip_timeline_empty">No events in this trip.</string>
+    <string name="trip_ongoing">In progress</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_audio_header">Audio</string>
+    <string name="settings_volume">Alert volume</string>
+    <string name="settings_tts">Spoken hazard callouts</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_hi">हिन्दी</string>
+    <string name="settings_alerts_header">Alerts (advanced)</string>
+    <string name="settings_wrong_side">Wrong-side oncoming alert (experimental)</string>
+    <string name="settings_tuning_reset">Reset alert tuning to defaults</string>
+    <string name="settings_fcw_caution_ttc">FCW caution TTC (s)</string>
+    <string name="settings_fcw_critical_ttc">FCW critical TTC (s)</string>
+    <string name="settings_headway_advisory">Headway advisory (s)</string>
+    <string name="settings_headway_warning">Headway warning (s)</string>
+    <string name="settings_privacy_header">Privacy &amp; data</string>
+    <string name="settings_sync">Anonymous hazard sync</string>
+    <string name="settings_sync_desc">Uploads hazard events only (type, location, confidence). Never video or images.</string>
+    <string name="settings_reset_device_id">Reset anonymous device ID</string>
+    <string name="settings_device_id_reset">Device ID reset</string>
+    <string name="settings_privacy_page">What RabbitAV stores</string>
+    <string name="settings_battery_header">Reliability</string>
+    <string name="settings_incident_header">Incident clips</string>
+    <string name="settings_incident_clip">Record incident clips on critical warnings</string>
+    <string name="settings_incident_desc">Keeps a rolling 10 s buffer and saves ±15 s locally on FCW-critical. Auto-pruned at 2 GB. Off by default.</string>
+    <string name="settings_about_header">About</string>
+    <string name="settings_version">Version %1$s</string>
+
+    <!-- Privacy page -->
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_body">RabbitAV runs entirely on your phone.\n\nStored on device:\n• Hazard sites (type, location, confidence, timestamps)\n• Trips (route stats, alert counts — no video)\n• Mount calibration profiles\n• A rolling in-memory log for diagnostics\n\nNever stored, never uploaded:\n• Camera video or images (frames are processed live and discarded)\n• Audio\n\nIf you enable anonymous sync, only hazard events (type, coordinates, heading, speed, confidence, timestamp) plus a random resettable device ID are uploaded. Imagery never leaves the device.</string>
+
+    <!-- OEM guidance -->
+    <string name="oem_title">Keep RabbitAV alive</string>
+    <string name="oem_intro">Many Android brands aggressively kill background apps, which would end a drive session mid-highway. Apply the steps for your brand:</string>
+    <string name="oem_xiaomi">Xiaomi / MIUI · Settings → Apps → Manage apps → RabbitAV → Autostart ON; Battery saver → No restrictions. Also lock the app in Recents (pull down on its card).</string>
+    <string name="oem_vivo">Vivo / Funtouch · i Manager → App manager → Autostart manager → allow RabbitAV; Settings → Battery → High background power consumption → allow.</string>
+    <string name="oem_oppo">Oppo / ColorOS · Settings → Battery → App battery management → RabbitAV → Allow background activity; Startup manager → allow autostart.</string>
+    <string name="oem_realme">Realme · Settings → App management → App list → RabbitAV → Allow auto-launch; Battery → App battery management → Don\'t optimize.</string>
+    <string name="oem_samsung">Samsung / One UI · Settings → Battery → Background usage limits → remove RabbitAV from Sleeping apps; add to Never sleeping apps.</string>
+    <string name="oem_generic">All phones · Grant the battery-optimization exemption below and keep the app pinned in Recents during first drives.</string>
+
+    <!-- Debug screen -->
+    <string name="debug_title">Diagnostics</string>
+    <string name="debug_source_header">Frame source</string>
+    <string name="debug_source_live">Live camera</string>
+    <string name="debug_source_video">Video file</string>
+    <string name="debug_video_none">No videos in test dir. Push one:\nadb push road.mp4 /sdcard/Android/data/com.deepmost.rabbitav/files/test/</string>
+    <string name="debug_video_loop">Loop video (soak)</string>
+    <string name="debug_bench_header">Delegate benchmark</string>
+    <string name="debug_bench_rerun">Re-run benchmark</string>
+    <string name="debug_bench_running">Benchmarking…</string>
+    <string name="debug_bench_none">Not yet run — starts automatically on first drive.</string>
+    <string name="debug_perf_header">Live performance</string>
+    <string name="debug_model_header">Model manager</string>
+    <string name="debug_model_active">Active: %1$s (%2$s)</string>
+    <string name="debug_model_caps">Capabilities: %1$s</string>
+    <string name="debug_model_import">Import staged model</string>
+    <string name="debug_model_clear">Remove override (use bundled)</string>
+    <string name="debug_model_staging_hint">Stage via:\nadb push model.tflite model_config.json /sdcard/Android/data/com.deepmost.rabbitav/files/models-staging/</string>
+    <string name="debug_model_imported">Model imported: %1$s</string>
+    <string name="debug_model_import_failed">Import failed: %1$s</string>
+    <string name="debug_imu_header">IMU</string>
+    <string name="debug_imu_record_start">Record sensors CSV</string>
+    <string name="debug_imu_record_stop">Stop recording</string>
+    <string name="debug_imu_gyro">gyro: %1$s · rate: %2$.0f Hz</string>
+    <string name="debug_overlay_toggle">Debug overlay on HUD</string>
+    <string name="debug_export_header">Export</string>
+    <string name="debug_export_geojson">Export GeoJSON</string>
+    <string name="debug_export_csv">Export CSV</string>
+    <string name="debug_export_logs">Export logs</string>
+    <string name="debug_thermal_hint">Simulate thermal pressure:\nadb shell cmd thermalservice override-status 3</string>
+
+    <!-- Misc -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="nav_drive">Drive</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_trips">Trips</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_debug">Debug</string>
 </resources>

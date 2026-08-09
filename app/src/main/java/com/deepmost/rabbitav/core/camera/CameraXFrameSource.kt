@@ -98,11 +98,11 @@ class CameraXFrameSource(
             return@withContext
         }
         if (current != null) {
-            current.surfaceProvider = surfaceProvider
+            current.setSurfaceProvider(surfaceProvider)
             return@withContext
         }
         val p = Preview.Builder().build()
-        p.surfaceProvider = surfaceProvider
+        p.setSurfaceProvider(surfaceProvider)
         try {
             provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, p)
             preview = p

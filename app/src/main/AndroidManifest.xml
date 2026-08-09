@@ -51,6 +51,16 @@
             android:exported="false"
             android:foregroundServiceType="camera|location" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- WorkManager: on-demand initialization via Configuration.Provider on the
              Application (needed for Hilt worker injection). -->
         <provider
