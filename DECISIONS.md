@@ -58,6 +58,8 @@ Device gates found three real bugs no amount of JVM testing had caught — each 
 
 Environment finding, not a bug: **`cmd thermalservice override-status 3` on this Samsung applies real, ramping core mitigation**, not just a reported status — single-thread Kotlin stages slow ~3–7× while XNNPACK's worker threads keep big-core affinity (p50 pinned at ~21 ms throughout). This is exactly the environment the governor exists for; the soak assertion now treats any governor level above L0 as a legitimate explanation for low fps.
 
+Second environment finding: **Samsung app-sleep stopped the drive service ~17 min into the first 45-min soak** — the app had never been opened via launcher and was not battery-exempted (instrumentation-only usage), which is precisely the scenario the onboarding's battery-exemption step and the OEM guidance page exist to prevent. Two responses: (a) REPLAY mode no longer declares a camera FGS type (it uses no camera; an unnecessary camera-type FGS maximizes exposure to while-in-use policy kills), and (b) the soak procedure now mirrors a real user's setup (`dumpsys deviceidle whitelist +pkg`, active standby bucket, app opened once). The START_STICKY recovery crash that followed the kill is a HiltTestApplication-only artifact — the production Application always has its component ready before services are created.
+
 Measured on this device (entry-tier, one class above the floor): delegate winner **XNNPACK**, detector **~13–15 fps sustained** at p50 **20 ms** (budget: ≥8 fps), steady-state memory **55–80 MB** (budget: <350 MB), governor PROMOTE chain L0→L1→L2 observed at exactly 60 s per level with the FPS cap measured at 7.0/s against the 8 fps target.
 
 ## Known limitations (honest list)

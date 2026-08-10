@@ -118,7 +118,11 @@ class DriveForegroundService : LifecycleService() {
         val notification: Notification = notifications.build(HudState(running = true, mode = mode))
         if (Build.VERSION.SDK_INT >= 29) {
             var types = 0
-            if (mode != DriveMode.POCKET && hasCamera) types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
+            // Camera type ONLY when the camera is actually used (FULL_ADAS):
+            // replay decodes from a file and pocket has no camera at all, and
+            // an unnecessary camera-type FGS invites while-in-use policy kills
+            // (observed via OEM app-sleep during the on-device soak).
+            if (mode == DriveMode.FULL_ADAS && hasCamera) types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
             if (hasLocation) types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             if (types == 0) types = ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION // manifest-declared superset
             startForeground(NotificationHelper.NOTIFICATION_ID, notification, types)
