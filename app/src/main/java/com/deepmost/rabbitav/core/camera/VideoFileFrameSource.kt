@@ -87,6 +87,7 @@ class VideoFileFrameSource(
             var loopOffsetUs = 0L
             var lastPtsUs = 0L
             var inputDone = false
+            var lastStampNs = 0L
             val frameAdapter = MediaImageFrame()
 
             while (running.get()) {
@@ -140,9 +141,22 @@ class VideoFileFrameSource(
                                 }
                             }
 
+                            // Frame timestamps must be MONOTONIC DELIVERY TIME,
+                            // not media pts: when decode lags (thermal
+                            // mitigation) the input side wraps the loop while
+                            // outputs are mid-clip, and pts bookkeeping would
+                            // jump backward — starving the FPS cap and skewing
+                            // tracker dt (found on-device). Delivery time equals
+                            // media time whenever pacing keeps up.
+                            val stampNs = maxOf(
+                                maxOf(dueNs, SystemClock.elapsedRealtimeNanos()),
+                                lastStampNs + 1_000_000L
+                            )
+                            lastStampNs = stampNs
+
                             val image = codec.getOutputImage(outIdx)
                             if (image != null) {
-                                frameAdapter.wrap(image, rotation, dueNs) {
+                                frameAdapter.wrap(image, rotation, stampNs) {
                                     codec.releaseOutputBuffer(outIdx, false)
                                 }
                                 consumer.onFrame(frameAdapter)

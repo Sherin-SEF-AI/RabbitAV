@@ -176,6 +176,10 @@ class InferenceEngine(
     private fun refreshOutputs() {
         val interp = interpreter ?: return
         outputs.clear()
+        // Old map entries hold the PREVIOUS buffers (position at end-of-write);
+        // without this clear, run() sees size==size, keeps them, and the next
+        // tensor copy throws BufferOverflowException (caught on-device at L2).
+        outputMap.clear()
         for (i in 0 until interp.outputTensorCount) {
             val t = interp.getOutputTensor(i)
             val q = t.quantizationParams()

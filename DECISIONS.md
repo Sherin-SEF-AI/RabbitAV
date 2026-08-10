@@ -48,6 +48,18 @@ Each entry: what was decided, why, and what it affects. Newest entries append at
 - **Governor compute-pressure input** (p90 > 140 ms or drop ratio > 0.85) only promotes when thermal is also ≥ 0.7 — a cold phone with a heavy model should keep grinding at full quality; the FPS floor is the tracker's job.
 - **Release build signs with the debug keystore** so `assembleRelease` installs for on-device R8/perf verification; swap before any real distribution.
 
+## On-device validation findings (Galaxy A17 / SM-A176B, Exynos 1330-class, Android 16)
+
+Device gates found three real bugs no amount of JVM testing had caught — each fixed and covered:
+
+1. **NaN → SQLite NULL crash** (found by the M2 replay gate): a VRU/FCW alert with non-finite TTC or distance binds as NULL into the NOT NULL `alert_events` columns → `SQLiteConstraintException` on the first real alert. Fixed with a −1 "not applicable" sentinel at the persistence boundary.
+2. **BufferOverflowException after governor L2 resize**: `refreshOutputs()` rebuilt the output buffers but the interpreter's `outputMap` still held the old ones (same map size → never rebuilt), whose positions sat at end-of-write → every post-resize inference threw. Fixed by clearing the map on refresh.
+3. **Replay frame-clock regression under decode lag**: when thermal mitigation slows decoding below realtime, the extractor's input side reaches EOS and advances the loop offset while outputs are still mid-clip → frame timestamps jump backward → the pts-based FPS cap starves (observed: exactly one inference per 7 s loop; 8 fps × 2/7 = the measured 2.3 fps) and tracker dt skews. Fixed by stamping replay frames with guaranteed-monotonic delivery time; media pts is used for pacing only.
+
+Environment finding, not a bug: **`cmd thermalservice override-status 3` on this Samsung applies real, ramping core mitigation**, not just a reported status — single-thread Kotlin stages slow ~3–7× while XNNPACK's worker threads keep big-core affinity (p50 pinned at ~21 ms throughout). This is exactly the environment the governor exists for; the soak assertion now treats any governor level above L0 as a legitimate explanation for low fps.
+
+Measured on this device (entry-tier, one class above the floor): delegate winner **XNNPACK**, detector **~13–15 fps sustained** at p50 **20 ms** (budget: ≥8 fps), steady-state memory **55–80 MB** (budget: <350 MB), governor PROMOTE chain L0→L1→L2 observed at exactly 60 s per level with the FPS cap measured at 7.0/s against the 8 fps target.
+
 ## Known limitations (honest list)
 
 - The bundled COCO model has no AUTO_RICKSHAW / POTHOLE / SPEED_BREAKER classes; those light up via the model contract when a trained IDD model is imported. Rickshaws typically detect as `car`/`truck` meanwhile.

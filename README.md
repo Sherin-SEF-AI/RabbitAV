@@ -106,6 +106,29 @@ band-pass → MAD trigger → feature → classifier chain.
 - First drive start runs the **delegate benchmark** (XNNPACK vs GPU vs NNAPI, 30 timed inferences each, output-validated against the XNNPACK reference). Winner is persisted; re-run from the Debug tab.
 - 45-minute soak: push a long MP4 (or enable Loop video), start replay, watch `RAV-Gov`/memory in the Debug tab. Memory must stay flat (all hot-path buffers are preallocated).
 
+### Automated on-device acceptance gates
+
+Prefer raw `am instrument` over `gradlew connectedDebugAndroidTest` — the UTP
+runner is flaky on some OEM builds. Install both APKs first
+(`assembleDebug assembleDebugAndroidTest`, then `adb install -r` each):
+
+```bash
+R=com.deepmost.rabbitav.test/com.deepmost.rabbitav.HiltTestRunner
+
+# M1: service starts, camera binds, delegate benchmark, one real inference
+adb shell am instrument -w -e class com.deepmost.rabbitav.SmokeTest $R
+
+# M2: replay approach video fires FCW CAUTION then CRITICAL deterministically
+# (self-contained: stages its own video + calibration profile)
+adb shell am instrument -w -e class com.deepmost.rabbitav.ReplayGateTest $R
+
+# M5: looped-replay soak with per-minute RAV-Soak memory/fps log lines
+adb shell am instrument -w -e class com.deepmost.rabbitav.SoakTest -e soakMinutes 45 $R
+```
+
+The soak pairs naturally with the thermal override to exercise the governor
+under load (`override-status 3`, hold ≥60 s per level, then `reset`).
+
 ### Screen mirroring
 
 `scrcpy` mirrors the HUD nicely while the phone stays windshield-mounted:

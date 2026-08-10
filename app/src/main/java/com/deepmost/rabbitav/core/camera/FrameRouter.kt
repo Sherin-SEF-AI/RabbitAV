@@ -41,6 +41,9 @@ class FrameRouter(
 
     private val gate = AtomicBoolean(true)
     private var lastRingWriteNs = 0L
+    private var lastDiagNs = 0L
+    private var dropsBusy = 0L
+    private var dropsCapped = 0L
     @Volatile private var claimedSlot: Int = 0
 
     val framesSeen = AtomicLong(0)
@@ -107,15 +110,26 @@ class FrameRouter(
             }
 
             val analyzed: Boolean
-            if (executor.isBusy || (minSubmitIntervalNs > 0 && ts - lastSubmitNs < minSubmitIntervalNs)) {
+            val busyNow = executor.isBusy
+            val capped = minSubmitIntervalNs > 0 && ts - lastSubmitNs < minSubmitIntervalNs
+            if (busyNow || capped) {
                 // Only this thread submits, so isBusy is authoritative here.
                 framesDropped.incrementAndGet()
+                if (busyNow) dropsBusy++ else dropsCapped++
                 analyzed = false
             } else {
                 claimedSlot = preprocessor.claimForInference()
                 claimedTimestampNs = ts
                 analyzed = executor.trySubmit(inferenceTask)
                 if (analyzed) lastSubmitNs = ts
+            }
+            if (ts - lastDiagNs > 2_000_000_000L) {
+                lastDiagNs = ts
+                Timber.tag(TAG).d(
+                    "router: seen=%d inferred=%d dropBusy=%d dropCap=%d busyNow=%b sinceSubmit=%dms cap=%dms",
+                    framesSeen.get(), framesInferred.get(), dropsBusy, dropsCapped,
+                    busyNow, (ts - lastSubmitNs) / 1_000_000, minSubmitIntervalNs / 1_000_000
+                )
             }
             onFrameStats(ts, analyzed)
         } catch (t: Throwable) {
