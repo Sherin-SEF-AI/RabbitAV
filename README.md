@@ -1,5 +1,7 @@
 # RabbitAV
 
+Part of LabeloxAV
+
 A windshield-mounted Android phone becomes two fused systems for Indian roads:
 
 1. **On-device ADAS** — forward collision warning (FCW), headway monitoring, and vulnerable-road-user warnings. All inference runs on the phone. Nothing is uploaded, ever.
