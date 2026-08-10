@@ -41,10 +41,14 @@ class ThermalMonitor @Inject constructor(
     }
 
     /**
-     * Normalized pressure. getThermalHeadroom is rate-limited by the platform,
-     * so it is polled at most every 10 s and cached between calls.
+     * Normalized pressure — the MOST PESSIMISTIC of the available signals.
+     * getThermalHeadroom is the primary source but is a vendor forecast that
+     * ignores `cmd thermalservice override-status` (the Section 7 test hook),
+     * so the THERMAL_STATUS listener always contributes too. Headroom is
+     * platform-rate-limited; polled at most every 10 s and cached.
      */
     fun pressure(): Float {
+        var pressure = Float.NaN
         if (Build.VERSION.SDK_INT >= 30) {
             val now = System.currentTimeMillis()
             if (now - lastHeadroomCallMs >= HEADROOM_POLL_MS) {
@@ -57,18 +61,20 @@ class ThermalMonitor @Inject constructor(
                 }
             }
             if (!cachedHeadroom.isNaN() && cachedHeadroom > 0f) {
-                // headroom 1.0 == severe throttling threshold
-                return cachedHeadroom
+                pressure = cachedHeadroom // 1.0 == severe throttling threshold
             }
         }
         if (Build.VERSION.SDK_INT >= 29) {
-            return when (listenerStatus) {
+            val statusPressure = when (listenerStatus) {
                 PowerManager.THERMAL_STATUS_NONE -> 0.3f
                 PowerManager.THERMAL_STATUS_LIGHT -> 0.7f
                 PowerManager.THERMAL_STATUS_MODERATE -> 0.95f
                 else -> 1.2f // SEVERE and above
             }
+            pressure = if (pressure.isNaN()) statusPressure else maxOf(pressure, statusPressure)
         }
+        if (!pressure.isNaN()) return pressure
+
         // Pre-29: battery temperature via sticky intent (no receiver needed).
         val temp = batteryTempC()
         return when {

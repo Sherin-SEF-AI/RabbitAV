@@ -105,8 +105,10 @@ class TripRepository @Inject constructor(
                 lat = ego.lat,
                 lon = ego.lon,
                 speedMps = ego.speedMps,
-                ttcS = alert.secondsToEvent,
-                distanceM = alert.distanceM,
+                // NaN/Infinity bind as NULL in SQLite and violate NOT NULL;
+                // -1 is the "not applicable" sentinel for both columns.
+                ttcS = alert.secondsToEvent.takeIf { it.isFinite() } ?: -1f,
+                distanceM = alert.distanceM.takeIf { it.isFinite() } ?: -1f,
             )
         )
         val bumped = when (alert.kind) {
