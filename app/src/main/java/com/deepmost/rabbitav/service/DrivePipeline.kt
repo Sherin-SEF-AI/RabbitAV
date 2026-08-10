@@ -116,6 +116,13 @@ class DrivePipeline @Inject constructor(
 
     @Volatile private var tuning = AlertTuning()
     @Volatile private var calibration: CalibrationState = CalibrationState.INVALID
+    @Volatile private var language = "en"
+    private var clipRecorder: IncidentClipRecorder? = null
+    private var clipFrameW = 0
+    private var clipFrameH = 0
+
+    private val _calibrationDrift = MutableStateFlow(false)
+    val calibrationDrift: StateFlow<Boolean> = _calibrationDrift
     @Volatile private var geometry: GroundGeometry? = null
     @Volatile private var corridorOverlay: CorridorOverlay? = null
     @Volatile private var benchmarking = false
@@ -153,6 +160,10 @@ class DrivePipeline @Inject constructor(
         audioEngine.ttsLocale = if (settings.language.first() == "hi") java.util.Locale("hi", "IN") else java.util.Locale.ENGLISH
         val arb = AlertArbiter(audioEngine) { alert ->
             sessionScope.launch { tripRepository.onAlert(alert, egoEstimator.state.value) }
+            // Incident clips persist on critical warnings (Section 5.11)
+            if (alert.level == com.deepmost.rabbitav.core.alerts.AlertLevel.CRITICAL) {
+                clipRecorder?.trigger(alert.kind.name.lowercase())
+            }
         }
         arbiter = arb
         val engineAlertsEval = AdasAlertEngine { tuning }
@@ -217,6 +228,14 @@ class DrivePipeline @Inject constructor(
         }
         // tuning live updates
         sessionScope.launch { settings.tuning.collect { tuning = it } }
+        sessionScope.launch { settings.language.collect { language = it } }
+
+        // Drive-start calibration drift check (Section 5.9): if the mount
+        // pitch deviates > 3 deg from the active profile, prompt recalibration.
+        _calibrationDrift.value = false
+        if (mode == DriveMode.FULL_ADAS) {
+            sessionScope.launch { checkCalibrationDrift() }
+        }
 
         // --- vision chain (FULL_ADAS + REPLAY) ---
         if (mode != DriveMode.POCKET) {
@@ -309,6 +328,28 @@ class DrivePipeline @Inject constructor(
         thermalMonitor.start()
         sessionScope.launch {
             gov.state.collect { gs -> applyGovernorState(gs) }
+        }
+
+        // Incident clips (opt-in, camera-bearing modes; Section 5.11). The
+        // recorder starts lazily on the first fed frame (dims known then) and
+        // follows the settings toggle live.
+        sessionScope.launch {
+            settings.incidentClipEnabled.collect { enabled ->
+                if (enabled) {
+                    router.clipFeeder = { prep, ts ->
+                        val rec = clipRecorderOrStart(prep.uprightW, prep.uprightH)
+                        val buf = rec?.borrowBuffer()
+                        if (rec != null && buf != null) {
+                            if (prep.copyUprightTo(buf)) rec.submitFrame(buf, ts)
+                            else rec.returnBuffer(buf)
+                        }
+                    }
+                } else {
+                    router.clipFeeder = null
+                    clipRecorder?.stop()
+                    clipRecorder = null
+                }
+            }
         }
 
         // frame source
@@ -434,6 +475,7 @@ class DrivePipeline @Inject constructor(
             hazardsThisTrip = hazardsThisTrip,
             tripDistanceKm = (tripRepository.currentDistanceM / 1000.0).toFloat(),
             synthetic = ego.synthetic,
+            calibrationDrift = _calibrationDrift.value,
         )
     }
 
@@ -580,8 +622,60 @@ class DrivePipeline @Inject constructor(
         }
     }
 
+    private fun clipRecorderOrStart(w: Int, h: Int): IncidentClipRecorder? {
+        val existing = clipRecorder
+        if (existing != null && existing.isRunning && w == clipFrameW && h == clipFrameH) return existing
+        if (w <= 0 || h <= 0) return null
+        existing?.stop()
+        val rec = IncidentClipRecorder(context)
+        rec.start(w, h)
+        clipRecorder = rec
+        clipFrameW = w
+        clipFrameH = h
+        return rec
+    }
+
+    /** Section 5.9: stationary-ish gravity sample at drive start; > 3 deg
+     *  deviation from the active profile raises the recalibration prompt. */
+    private suspend fun checkCalibrationDrift() {
+        kotlinx.coroutines.delay(2000) // let the mount settle after start
+        val calib = calibration
+        if (!calib.valid) return
+        val sm = context.getSystemService(Context.SENSOR_SERVICE) as android.hardware.SensorManager
+        val accel = sm.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER) ?: return
+        var sx = 0.0; var sy = 0.0; var sz = 0.0; var n = 0
+        val done = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val listener = object : android.hardware.SensorEventListener {
+            override fun onSensorChanged(event: android.hardware.SensorEvent) {
+                sx += event.values[0]; sy += event.values[1]; sz += event.values[2]; n++
+                if (n >= 100) done.complete(Unit)
+            }
+            override fun onAccuracyChanged(sensor: android.hardware.Sensor?, accuracy: Int) = Unit
+        }
+        sm.registerListener(listener, accel, android.hardware.SensorManager.SENSOR_DELAY_GAME)
+        try {
+            kotlinx.coroutines.withTimeoutOrNull(4000) { done.await() }
+        } finally {
+            sm.unregisterListener(listener)
+        }
+        if (n < 20) return
+        val pitch = com.deepmost.rabbitav.core.geometry.PitchMath.pitchFromGravity(
+            (sx / n).toFloat(), (sy / n).toFloat(), (sz / n).toFloat()
+        )
+        if (pitch.isNaN()) return // moving/vibrating: skip rather than mis-warn
+        val deltaDeg = Math.toDegrees(kotlin.math.abs(pitch - calib.pitchRad).toDouble())
+        if (deltaDeg > CALIBRATION_DRIFT_DEG) {
+            Timber.tag(TAG).w("mount pitch drift %.1f deg vs profile; prompting recalibration", deltaDeg)
+            _calibrationDrift.value = true
+        }
+    }
+
     private fun hazardSpeech(type: HazardType): String {
-        val res = context.resources
+        // Localize to the chosen app language (TTS strings must follow the
+        // audio language even when the UI process locale differs).
+        val config = android.content.res.Configuration(context.resources.configuration)
+        config.setLocale(if (language == "hi") java.util.Locale("hi", "IN") else java.util.Locale.ENGLISH)
+        val res = context.createConfigurationContext(config).resources
         return when (type) {
             HazardType.SPEED_BREAKER -> res.getString(R.string.tts_breaker_ahead)
             HazardType.POTHOLE -> res.getString(R.string.tts_pothole_ahead)
@@ -628,6 +722,9 @@ class DrivePipeline @Inject constructor(
         inferenceExecutor = null
         engine = null
 
+        clipRecorder?.stop()
+        clipRecorder = null
+
         preprocessor?.close()
         preprocessor = null
         frameRouter = null
@@ -654,5 +751,8 @@ class DrivePipeline @Inject constructor(
 
         /** 25 Hz alert loop (Section 4). */
         const val ALERT_PERIOD_MS = 40L
+
+        /** Recalibration prompt threshold (Section 5.9): 3 degrees. */
+        const val CALIBRATION_DRIFT_DEG = 3.0
     }
 }

@@ -35,6 +35,11 @@ class FrameRouter(
     @Volatile var minSubmitIntervalNs: Long = 0L
     private var lastSubmitNs = 0L
 
+    /** Incident clip feed (Section 5.11): called at ~10 Hz with the upright
+     *  frame geometry so the recorder can borrow/fill/submit. Null = off. */
+    @Volatile var clipFeeder: ((preprocessor: FramePreprocessor, timestampNs: Long) -> Unit)? = null
+    private var lastClipFeedNs = 0L
+
     /** Ring is created lazily once geometry is known (entry size depends on crop). */
     @Volatile var ring: LookbackRingBuffer? = null
         private set
@@ -104,6 +109,14 @@ class FrameRouter(
                 ring?.write(ts) { buf -> preprocessor.writeRingCrop(buf) }
             }
 
+            // Incident clip feed at ~10 Hz (opt-in; Section 5.11)
+            clipFeeder?.let { feeder ->
+                if (ts - lastClipFeedNs >= CLIP_PERIOD_NS) {
+                    lastClipFeedNs = ts
+                    feeder(preprocessor, ts)
+                }
+            }
+
             if (!detectorEnabled) {
                 onFrameStats(ts, false)
                 return
@@ -160,5 +173,8 @@ class FrameRouter(
 
         /** 66 ms -> ~15 Hz ring writes; 45 entries cover 3.0 s. */
         const val RING_PERIOD_NS = 66_000_000L
+
+        /** 100 ms -> 10 Hz incident-clip encoder feed. */
+        const val CLIP_PERIOD_NS = 100_000_000L
     }
 }

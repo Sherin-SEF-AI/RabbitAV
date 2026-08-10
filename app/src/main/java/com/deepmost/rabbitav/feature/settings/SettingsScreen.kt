@@ -52,7 +52,14 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
+    private val calibrationRepository: com.deepmost.rabbitav.core.data.repo.CalibrationRepository,
 ) : ViewModel() {
+
+    val calibrationProfiles = calibrationRepository.profiles()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun activateProfile(id: Long) = viewModelScope.launch { calibrationRepository.activate(id) }
+    fun deleteProfile(id: Long) = viewModelScope.launch { calibrationRepository.delete(id) }
     val volume = settings.audioVolume.stateIn(viewModelScope, SharingStarted.Eagerly, 1f)
     val ttsEnabled = settings.ttsEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, true)
     val language = settings.language.stateIn(viewModelScope, SharingStarted.Eagerly, "en")
@@ -65,7 +72,14 @@ class SettingsViewModel @Inject constructor(
 
     fun setVolume(v: Float) = viewModelScope.launch { settings.setAudioVolume(v) }
     fun setTts(v: Boolean) = viewModelScope.launch { settings.setTtsEnabled(v) }
-    fun setLanguage(lang: String) = viewModelScope.launch { settings.setLanguage(lang) }
+
+    fun setLanguage(context: android.content.Context, lang: String) {
+        // SharedPreferences mirror: read synchronously in attachBaseContext
+        // on API 26-32 (DataStore is async and unavailable that early).
+        context.getSharedPreferences("rav_locale", android.content.Context.MODE_PRIVATE)
+            .edit().putString("lang", lang).apply()
+        viewModelScope.launch { settings.setLanguage(lang) }
+    }
     fun setWrongSide(v: Boolean) = viewModelScope.launch { settings.setWrongSideEnabled(v) }
     fun setIncidentClip(v: Boolean) = viewModelScope.launch { settings.setIncidentClipEnabled(v) }
     fun setTuning(t: AlertTuning) = viewModelScope.launch { settings.setTuning(t) }
@@ -115,11 +129,11 @@ fun SettingsScreen(
             Text(stringResource(R.string.settings_language), color = RavColors.TextPrimary)
             Row {
                 LangChip(stringResource(R.string.settings_language_en), language == "en") {
-                    viewModel.setLanguage("en"); applyAppLocale(context, "en")
+                    viewModel.setLanguage(context, "en"); applyAppLocale(context, "en")
                 }
                 Spacer(Modifier.padding(4.dp))
                 LangChip(stringResource(R.string.settings_language_hi), language == "hi") {
-                    viewModel.setLanguage("hi"); applyAppLocale(context, "hi")
+                    viewModel.setLanguage(context, "hi"); applyAppLocale(context, "hi")
                 }
             }
         }
@@ -185,6 +199,56 @@ fun SettingsScreen(
             }
         }
 
+        SectionHeader(stringResource(R.string.settings_incident_header))
+        SettingCard {
+            val incidentClip by viewModel.incidentClip.collectAsStateWithLifecycle()
+            ToggleRow(stringResource(R.string.settings_incident_clip), incidentClip) { viewModel.setIncidentClip(it) }
+            Text(
+                stringResource(R.string.settings_incident_desc),
+                color = RavColors.TextSecondary,
+                fontSize = 13.sp,
+            )
+        }
+
+        SectionHeader(stringResource(R.string.settings_calib_header))
+        SettingCard {
+            val profiles by viewModel.calibrationProfiles.collectAsStateWithLifecycle()
+            if (profiles.isEmpty()) {
+                Text(
+                    stringResource(R.string.settings_calib_none),
+                    color = RavColors.TextSecondary,
+                    fontSize = 13.sp,
+                )
+            }
+            for (p in profiles) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    androidx.compose.material3.RadioButton(
+                        selected = p.active,
+                        onClick = { viewModel.activateProfile(p.id) },
+                    )
+                    Column(Modifier.weight(1f)) {
+                        Text(p.name, color = RavColors.TextPrimary, fontSize = 15.sp)
+                        Text(
+                            "%.2f m · %.1f°".format(
+                                p.cameraHeightM,
+                                Math.toDegrees(p.pitchRad.toDouble())
+                            ),
+                            color = RavColors.TextSecondary,
+                            fontSize = 12.sp,
+                        )
+                    }
+                    TextButton(onClick = { viewModel.deleteProfile(p.id) }) {
+                        Text(stringResource(R.string.settings_calib_delete), color = RavColors.Red, fontSize = 13.sp)
+                    }
+                }
+            }
+        }
+
         SectionHeader(stringResource(R.string.settings_about_header))
         Text(
             stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
@@ -195,12 +259,15 @@ fun SettingsScreen(
     }
 }
 
-/** Per-app locale on API 33+; below that, strings follow the system locale
- *  (full HI resources exist either way) — see DECISIONS.md. */
+/** API 33+: per-app locale via LocaleManager (system restarts activities).
+ *  API 26-32: MainActivity.attachBaseContext reads the SharedPreferences
+ *  mirror — recreate the activity so the change applies immediately. */
 private fun applyAppLocale(context: android.content.Context, lang: String) {
     if (Build.VERSION.SDK_INT >= 33) {
         val lm = context.getSystemService(android.app.LocaleManager::class.java)
         lm?.applicationLocales = android.os.LocaleList.forLanguageTags(lang)
+    } else {
+        (context as? android.app.Activity)?.recreate()
     }
 }
 

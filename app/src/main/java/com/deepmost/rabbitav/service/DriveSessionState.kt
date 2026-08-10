@@ -37,6 +37,8 @@ data class HudState(
     val hazardsThisTrip: Int = 0,
     val tripDistanceKm: Float = 0f,
     val synthetic: Boolean = false,
+    /** Mount pitch drifted > 3 deg from the active profile (Section 5.9). */
+    val calibrationDrift: Boolean = false,
 )
 
 /** Geometry overlays precomputed for the debug HUD painter (Section 5.9). */

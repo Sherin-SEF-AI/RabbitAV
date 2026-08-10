@@ -137,6 +137,20 @@ class DebugViewModel @Inject constructor(
         }
     }
 
+    fun incidentClips(): List<File> =
+        File(context.filesDir, "incidents").listFiles { f -> f.extension == "mp4" }
+            ?.sortedByDescending { it.lastModified() }.orEmpty()
+
+    fun shareClip(file: File) {
+        try {
+            val intent = Intent.createChooser(exporter.shareIntent(file, "video/mp4"), file.name)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (t: Throwable) {
+            message.value = "share failed: ${t.message}"
+        }
+    }
+
     fun export(kind: String) {
         viewModelScope.launch {
             try {
@@ -309,6 +323,32 @@ fun DebugScreen(viewModel: DebugViewModel = hiltViewModel()) {
                         else R.string.debug_imu_record_start
                     )
                 )
+            }
+        }
+
+        Section(stringResource(R.string.debug_clips_header)) {
+            var clips by remember { mutableStateOf(listOf<File>()) }
+            LaunchedEffect(message) { clips = viewModel.incidentClips() }
+            if (clips.isEmpty()) {
+                Text(
+                    stringResource(R.string.debug_clips_none),
+                    color = RavColors.TextSecondary,
+                    fontSize = 13.sp,
+                )
+            }
+            for (clip in clips.take(5)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "${clip.name}  ·  %.1f MB".format(clip.length() / 1048576.0),
+                        color = RavColors.TextPrimary,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.weight(1f),
+                    )
+                    OutlinedButton(onClick = { viewModel.shareClip(clip) }) {
+                        Text(stringResource(R.string.debug_clips_share), fontSize = 12.sp)
+                    }
+                }
             }
         }
 

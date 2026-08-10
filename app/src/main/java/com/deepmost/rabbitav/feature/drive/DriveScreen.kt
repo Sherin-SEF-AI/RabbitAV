@@ -137,6 +137,27 @@ fun DriveScreen(
                 if (hud.mode == DriveMode.REPLAY) {
                     SyntheticSpeedSlider(hud, viewModel)
                 }
+                if (hud.calibrationDrift) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(RavColors.SurfaceHigh)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            stringResource(R.string.hud_calibration_drift),
+                            color = RavColors.CautionYellow,
+                            fontSize = 15.sp,
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedButton(onClick = onNavigateToCalibration) {
+                            Text(stringResource(R.string.hud_calibrate_now))
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
+                }
                 AdasStatusLine(hud, onNavigateToCalibration)
                 Spacer(Modifier.height(8.dp))
                 ReportChips(viewModel, hud)

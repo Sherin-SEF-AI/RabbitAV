@@ -263,6 +263,31 @@ class FramePreprocessor : AutoCloseable {
         }
     }
 
+    /**
+     * Packs the just-written upright frame into [dst] as contiguous I420
+     * (Y then U then V). Analyzer thread, immediately after [packAndRotate].
+     * Used by the incident clip recorder. Returns false when unconfigured or
+     * [dst] is too small.
+     */
+    fun copyUprightTo(dst: ByteArray): Boolean {
+        val up = upright[writeIdx] ?: return false
+        val w = uprightW
+        val h = uprightH
+        if (dst.size < w * h * 3 / 2) return false
+        packPlaneOut(up.planeY.buffer, up.planeY.rowStride.value, w, h, dst, 0)
+        packPlaneOut(up.planeU.buffer, up.planeU.rowStride.value, w / 2, h / 2, dst, w * h)
+        packPlaneOut(up.planeV.buffer, up.planeV.rowStride.value, w / 2, h / 2, dst, w * h + w * h / 4)
+        return true
+    }
+
+    private fun packPlaneOut(src: ByteBuffer, rowStride: Int, w: Int, h: Int, dst: ByteArray, dstOff: Int) {
+        for (y in 0 until h) {
+            src.position(y * rowStride)
+            src.get(dst, dstOff + y * w, w)
+        }
+        src.rewind()
+    }
+
     private fun copySubPlane(
         src: ByteBuffer, srcStride: Int, x0: Int, y0: Int,
         dst: ByteBuffer, dstStride: Int, w: Int, h: Int,

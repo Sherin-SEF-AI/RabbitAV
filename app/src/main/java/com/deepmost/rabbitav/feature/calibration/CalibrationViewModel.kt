@@ -9,11 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepmost.rabbitav.core.data.repo.CalibrationRepository
 import com.deepmost.rabbitav.core.geometry.VehiclePreset
+import com.deepmost.rabbitav.core.geometry.PitchMath
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.math.asin
-import kotlin.math.sqrt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -96,15 +95,11 @@ class CalibrationViewModel @Inject constructor(
                 _state.value = _state.value.copy(capturing = false)
                 return@launch
             }
-            val ax = (sx / n).toFloat()
-            val ay = (sy / n).toFloat()
-            val az = (sz / n).toFloat()
-            val mag = sqrt(ax * ax + ay * ay + az * az)
-            if (mag < 5f) {
+            val pitch = PitchMath.pitchFromGravity((sx / n).toFloat(), (sy / n).toFloat(), (sz / n).toFloat())
+            if (pitch.isNaN()) {
                 _state.value = _state.value.copy(capturing = false)
                 return@launch
             }
-            val pitch = asin((-az / mag).coerceIn(-1f, 1f))
             Timber.tag(TAG).i("pitch captured: %.2f deg (n=%d)", Math.toDegrees(pitch.toDouble()), n)
             _state.value = _state.value.copy(
                 capturing = false,

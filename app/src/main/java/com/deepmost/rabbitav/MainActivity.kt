@@ -41,6 +41,26 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    /** App-language on API 26-32: wrap the base context with the saved locale
+     *  (SharedPreferences mirror of the DataStore setting — this hook runs
+     *  before any async storage is available). API 33+ uses LocaleManager. */
+    override fun attachBaseContext(newBase: android.content.Context) {
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            super.attachBaseContext(newBase)
+            return
+        }
+        val lang = newBase.getSharedPreferences("rav_locale", MODE_PRIVATE)
+            .getString("lang", "") ?: ""
+        if (lang.isEmpty()) {
+            super.attachBaseContext(newBase)
+        } else {
+            val config = android.content.res.Configuration(newBase.resources.configuration)
+            config.setLocale(if (lang == "hi") java.util.Locale("hi", "IN") else java.util.Locale.ENGLISH)
+            super.attachBaseContext(newBase.createConfigurationContext(config))
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Keep the screen on while the HUD is visible — this is a windshield app.

@@ -202,4 +202,13 @@
     <string name="nav_trips">यात्राएँ</string>
     <string name="nav_settings">सेटिंग</string>
     <string name="nav_debug">डिबग</string>
+
+    <!-- Incident clips / calibration profiles / drift -->
+    <string name="hud_calibration_drift">कैलिब्रेशन के बाद माउंट का कोण बदल गया — दूरियाँ गलत हो सकती हैं</string>
+    <string name="settings_calib_header">कैलिब्रेशन प्रोफ़ाइल</string>
+    <string name="settings_calib_none">अभी कोई प्रोफ़ाइल नहीं — ड्राइव टैब से कैलिब्रेशन विज़ार्ड चलाएँ।</string>
+    <string name="settings_calib_delete">हटाएँ</string>
+    <string name="debug_clips_header">घटना क्लिप</string>
+    <string name="debug_clips_none">कोई क्लिप नहीं। सेटिंग में घटना रिकॉर्डिंग चालू करें; गंभीर चेतावनी पर क्लिप सेव होती हैं।</string>
+    <string name="debug_clips_share">साझा करें</string>
 </resources>
