@@ -67,13 +67,23 @@ class DriveForegroundService : LifecycleService() {
     }
 
     private fun startSession(mode: DriveMode, replayPath: String?) {
-        if (pipeline.isRunning) {
-            Timber.tag(TAG).i("session already running; ignoring start")
-            return
-        }
         // FGS type must match granted permissions (Android 14+ enforcement).
         val hasCamera = ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         val hasLocation = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (pipeline.isRunning) {
+            // Every startForegroundService() MUST be answered by a
+            // startForeground() — even when the session is already live —
+            // or the system kills the app (found on-device via a double
+            // START tap). Refresh the notification and return.
+            Timber.tag(TAG).i("session already running; refreshing foreground state only")
+            try {
+                startInForeground(pipeline.currentMode, hasCamera, hasLocation)
+            } catch (t: Throwable) {
+                Timber.tag(TAG).w(t, "foreground refresh failed")
+            }
+            return
+        }
         val effectiveMode = if (mode == DriveMode.FULL_ADAS && !hasCamera) {
             Timber.tag(TAG).w("camera permission missing; falling back to POCKET mode")
             DriveMode.POCKET
